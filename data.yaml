@@ -1,0 +1,6 @@
+path: e:/OneDrive/Desktop/Project II/yolo_dataset
+train: images/train
+val: images/val
+test: images/test
+nc: 1
+names: ['license_plate']
