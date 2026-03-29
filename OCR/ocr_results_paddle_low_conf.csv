@@ -1,0 +1,19 @@
+﻿Filename,Predicted_Plate,Confidence,Is_Flipped,Is_Line1_Valid
+0416_05808_b.jpg,69-E5 211.11,0.4314,True,True
+0242_05960_b.jpg,50-X7 177.70,0.5742,True,True
+0502_05172_b.jpg,86-Z29 1369,0.6455,False,False
+0519_02301_b.jpg,57-T89 5469,0.6458,False,False
+0256_05284_b.jpg,82-91 6579,0.6676,False,False
+0110_04515_b.jpg,87-L7 5575,0.676,False,True
+0511_02302_b.jpg,69-V1 611.21,0.7048,True,True
+0154_02257_b.jpg,11-G20 1019,0.7298,False,False
+0317_08220_b.jpg,79-B60 2N62,0.7508,False,False
+0139_05267_b.jpg,10-EA 006.01,0.7793,True,True
+0129_00608_b.jpg,60-G6 087.97,0.817,False,True
+0357_04948_b.jpg,82-D7 7375,0.8262,False,True
+0125_02242_b.jpg,80-B51 74Y5,0.8384,True,False
+0312_05588_b.jpg,70-B5 1261,0.8636,False,True
+0136_06222_b.jpg,60-B6 280.32,0.8639,False,True
+0420_08001_b.jpg,67-T5 6N75,0.8843,False,True
+0302_05034_b.jpg,50-D2 506.21,0.885,False,True
+0103_01697_b.jpg,95-AA 008.39,0.8875,False,True
