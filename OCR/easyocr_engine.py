@@ -1,3 +1,4 @@
+from email.mime import image
 import time
 import numpy as np
 import easyocr
@@ -43,7 +44,9 @@ class EasyOCREngine:
               - bbox:      list – bounding box [[x1,y1],[x2,y2],[x3,y3],[x4,y4]]
         """
         start = time.perf_counter()
-        results = self.reader.readtext(image)
+        # Thêm dấu gạch ngang vào cuối chuỗi
+        allowed_chars = '0123456789ABCDEFGHKLMNPSTUVXYZ-'
+        results = self.reader.readtext(image, allowlist=allowed_chars)
         elapsed = time.perf_counter() - start
 
         parsed = []

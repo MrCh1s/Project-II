@@ -122,6 +122,7 @@ def process_image(
     enhanced = enhance_plate_image(crop)
 
     raw_data = ocr_engine.readtext(enhanced)
+
     items = raw_data.get('items', [])
     ocr_time = raw_data.get('elapsed', 0.0)
 

@@ -84,20 +84,25 @@ def _parse_gt_components(plate_str: str) -> dict[str, str]:
 
 
 def _parse_pred_components(pred_str: str) -> dict[str, str]:
-    cleaned = re.sub(r'[\s-]', '', pred_str.upper())
-
+    # cleaned = re.sub(r'[\s-]', '', pred_str.upper())
+    cleaned = re.sub(r'[^A-Z0-9]', '', pred_str.upper())
+    
     province = ''
     series   = ''
     number   = ''
 
     if len(cleaned) >= 2 and cleaned[:2].isdigit():
         province = cleaned[:2]
-        rest = cleaned[2:]
-        if len(rest) <= 2:
-            series = rest
-        else:
-            series = rest[:2]
-            number = rest[2:]
+        s_char1 = cleaned[2]
+        s_char2 = cleaned[3]
+
+        num_to_char_map = {'8': 'B', '5': 'S', '0': 'D', '2': 'Z', '6': 'G', '7' : 'T', '1': 'I', '3': 'E', '4': 'A', '9': 'P'}
+        
+        if s_char1.isdigit() and s_char1 in num_to_char_map:
+            s_char1 = num_to_char_map[s_char1] 
+            
+        series = s_char1 + s_char2
+        number = cleaned[4:]
     else:
         series = cleaned
 

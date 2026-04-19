@@ -36,10 +36,10 @@ import shutil
 from sklearn.model_selection import train_test_split
 
 # --- THIẾT LẬP ĐƯỜNG DẪN GỐC ---
-bike_dir = r"e:\OneDrive\Desktop\Project II\data\vietnam-car-license-plate\Bike\GreenParking"
-bike_annotation = r"e:\OneDrive\Desktop\Project II\data\vietnam-car-license-plate\Bike\GreenParking\location.txt"
+bike_dir = r"/Users/binhminh/Project-II/data/vietnam-car-license-plate/Bike/GreenParking"
+bike_annotation = r"/Users/binhminh/Project-II/data/vietnam-car-license-plate/Bike/GreenParking/location.txt"
 output_labels_dir = r"e:\OneDrive\Desktop\Project II\data\temp_labels" # Thư mục nháp
-final_dataset = r"e:\OneDrive\Desktop\Project II\yolo_dataset"       # Thư mục đích chuẩn YOLO
+final_dataset = r"/Users/binhminh/Project-II/yolo_dataset"       # Thư mục đích chuẩn YOLO
 
 # 1. Chuyển đổi định dạng Toạ Độ (To YOLO txt format)
 os.makedirs(output_labels_dir, exist_ok=True)
