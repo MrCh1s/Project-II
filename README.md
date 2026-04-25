@@ -1,4 +1,4 @@
-#  Hệ thống nhận diện biển số xe (License Plate Recognition)
+#  Hệ thống nhận diện biển số xe 
 
 - Dự án tập trung vào việc xây dựng hệ thống tự động phát hiện và nhận diện biển số xe tại Việt Nam. 
 - Hệ thống sử dụng mô hình phát hiện đối tượng mới nhất YOLOv11 kết hợp với các công cụ OCR mạnh mẽ (EasyOCR, PaddleOCR) để trích xuất thông tin chính xác từ hình ảnh.
@@ -56,7 +56,7 @@ Project-II/
 - Phần này chứa toàn bộ quy trình xây dựng mô hình Detection để xác định vị trí biển số xe trong khung hình. 
 - Đây là bước tiền đề quan trọng trước khi đưa vùng ảnh biển số vào Module OCR.
 
-### 🛠 Quy trình vận hành (Pipeline)
+### 🛠 Quy trình vận hành 
 - Bước 1: Chuẩn bị dữ liệu chuẩn YOLO bằng cách chạy toàn bộ data_preprocessing.ipynb
 - Bước 2: Thiết lập cấu hình huấn luyện trong file data.yaml
 - Bước 3: Huấn luyện mô hình trong train_yolo.ipynb và lưu best.pt là file trọng số
@@ -68,7 +68,7 @@ Project-II/
 - Module này thực hiện việc trích xuất ký tự từ vùng ảnh biển số đã được YOLO phát hiện. 
 - Hỗ trợ so sánh hiệu năng giữa hai Engine phổ biến là EasyOCR và PaddleOCR.
 
-### 🛠 Quy trình vận hành (Pipeline)
+### 🛠 Quy trình vận hành 
 - Bước 1: Cài đặt thư viện bổ sung
 
 ```bash
@@ -90,9 +90,9 @@ python run_pipeline.py --engine both --debug
 
 --- 
 
-# 3. Demo – Hệ thống nhận diện biển số xe
+## 3. Demo – Hệ thống nhận diện biển số xe
 
-## Tổng quan
+### Tổng quan
 Demo này trình bày cách sử dụng ứng dụng web để nhận diện biển số xe máy tại Việt Nam bằng mô hình YOLO kết hợp với PaddleOCR.  
 
 Hệ thống có tích hợp các kỹ thuật xử lý ảnh như:
@@ -101,14 +101,14 @@ Hệ thống có tích hợp các kỹ thuật xử lý ảnh như:
 
 Người dùng có thể tải ảnh lên giao diện web và hệ thống sẽ tự động phát hiện và đọc nội dung biển số.
 
-## Yêu cầu môi trường
+### Yêu cầu môi trường
 Cài đặt các thư viện cần thiết:
 
 ```bash
 pip install ultralytics paddleocr paddlepaddle gradio opencv-python numpy
 ```
 
-## Cách chạy demo
+### Cách chạy demo
 Bước 1: Khởi chạy ứng dụng
 ```bash
 python app.py
@@ -126,7 +126,7 @@ Bước 3: Sử dụng hệ thống
 3. Xem kết quả hiển thị
 ![ẢNH KẾT QUẢ](images/result.png)
 
-## Kết quả đầu ra
+### Kết quả đầu ra
 Hệ thống sẽ trả về:
 - Vị trí biển số (bounding box)
 - Nội dung biển số
