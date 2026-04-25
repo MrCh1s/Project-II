@@ -1,0 +1,18 @@
+# Core AI & Computer Vision
+ultralytics
+opencv-python
+numpy
+scikit-learn
+matplotlib
+
+# OCR Engines
+easyocr
+paddleocr
+paddlepaddle
+
+# UI & Data Handling
+gradio
+pandas
+
+# Utilities
+typing
