@@ -42,3 +42,45 @@ Phân phối ảnh để huấn luyện và đánh giá khách quan:
 - **Tập Train (70%-80%):** Dùng để huấn luyện mô hình học trọng số.
 - **Tập Validation (10%-20%):** Dùng để đánh giá độ chính xác chéo, tinh chỉnh siêu tham số và theo dõi xem mô hình có bị "học vẹt" (overfitting) hay không.
 - **Tập Test (10%):** Tập dữ liệu hoàn toàn chưa từng thấy trong lúc train, dùng đo đạc độ chính xác thực tế cuối cùng trước khi đưa mô hình vào ứng dụng thực tế chạy thật.
+
+---
+
+# Hướng dẫn Demo – Hệ thống nhận diện biển số xe
+
+## Tổng quan
+Demo này trình bày cách sử dụng ứng dụng web để nhận diện biển số xe máy tại Việt Nam bằng mô hình YOLO kết hợp với PaddleOCR.  
+
+Hệ thống có tích hợp các kỹ thuật xử lý ảnh như:
+- Làm nét ảnh  
+- Cân bằng ánh sáng  
+- Tự động lật ảnh (flip) nếu biển số bị ngược  
+
+Người dùng có thể tải ảnh lên giao diện web và hệ thống sẽ tự động phát hiện và đọc nội dung biển số.
+
+## Yêu cầu môi trường
+Cài đặt các thư viện cần thiết:
+
+```bash
+pip install ultralytics paddleocr paddlepaddle gradio opencv-python numpy
+```
+
+## Cách chạy demo
+Bước 1: Khởi chạy ứng dụng
+```bash
+python app.py
+```
+
+Bước 2: Mở giao diện web
+Sau khi chạy, mở trình duyệt và truy cập:
+http://127.0.0.1:7860
+
+Bước 3: Sử dụng hệ thống
+1. Nhấn vào Upload để chọn ảnh
+2. Chờ hệ thống xử lý (vài giây)
+3. Xem kết quả hiển thị
+
+## Kết quả đầu ra
+Hệ thống sẽ trả về:
+- Vị trí biển số (bounding box)
+- Nội dung biển số
+- Độ tin cậy (confidence)
