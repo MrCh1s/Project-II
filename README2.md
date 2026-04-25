@@ -1,2 +1,0 @@
-# Module 1: License Plate Detection (YOLO11)
-Phần này chứa toàn bộ quy trình xây dựng mô hình Detection để xác định vị trí biển số xe trong khung hình. Đây là bước tiền đề quan trọng trước khi đưa vùng ảnh biển số vào Module OCR.
