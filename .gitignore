@@ -1,9 +1,9 @@
 __pycache__/
-*.pyc
-runs/                
+*.pyc              
 datasets/           
 .env                 
 .ipynb_checkpoints/    
 tempCodeRunnerFile.py
 venv_project2
 data/vietnam-car-license-plate/CarTGMT
+.DS_Store
