@@ -6,17 +6,11 @@ import argparse
 import numpy as np
 import pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-# import models.ocr.config as config
 import config
-# from models.ocr.yolo_detector       import YoloDetector
 from yolo_detector import YoloDetector
-# from models.ocr.easyocr_engine      import EasyOCREngine
 from easyocr_engine import EasyOCREngine
-# from models.ocr.paddleocr_engine    import PaddleOCREngine
 from paddleocr_engine import PaddleOCREngine
-# from models.ocr.preprocessing       import enhance_plate_image
 from preprocessing import enhance_plate_image
-# from models.ocr.metrics import (OcrResult, TimingResult, component_accuracy, aggregate_confidence, compute_aggregate_metrics, print_metrics_report, _parse_gt_components,_parse_pred_components)
 from metrics import (OcrResult, TimingResult, component_accuracy, aggregate_confidence, compute_aggregate_metrics, print_metrics_report, _parse_gt_components,_parse_pred_components)
 import cv2
 
