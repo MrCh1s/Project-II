@@ -1,5 +1,8 @@
 # python run_pipeline.py [--engine {easyocr,paddleocr,both}] [--debug]
 import os
+# --- PADDLE WINDOWS FIXES ---
+os.environ["FLAGS_enable_pir_api"] = "0"
+os.environ["FLAGS_use_mkldnn"] = "0"
 import sys
 import time
 import argparse

@@ -1,7 +1,7 @@
 import os
 
 # Paths
-PROJECT_ROOT   = "/Users/binhminh/Project-II"
+PROJECT_ROOT   = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 YOLO_WEIGHTS   = os.path.join(PROJECT_ROOT, "runs/detect/runs_yolo11/plate_detection/weights/best.pt")
 TEST_IMAGE_DIR = os.path.join(PROJECT_ROOT, "data/yolo_dataset/images/test")
 GROUND_TRUTH_CSV = os.path.join(PROJECT_ROOT, "data/vietnam-car-license-plate/Bike/GreenParking/location.csv")

@@ -23,6 +23,7 @@ class YoloDetector:
             image,
             conf=config.YOLO_CONF_THRESHOLD,
             iou=config.YOLO_IOU_THRESHOLD,
+            imgsz=1280,
             verbose=False,
         )
 

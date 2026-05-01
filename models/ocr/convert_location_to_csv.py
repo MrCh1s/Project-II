@@ -12,7 +12,7 @@ import os
 import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.dirname("/Users/binhminh/Project-II/")         
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SRC_TXT = os.path.join(
     PROJECT_ROOT,
     "data/vietnam-car-license-plate/Bike/GreenParking/location.txt"
