@@ -80,9 +80,11 @@ pip install easyocr paddleocr paddlepaddle          # paddlepaddle-gpu nếu có
 python -m models.ocr.run_pipeline [--engine {easyocr,paddleocr,both}] [--debug]
 ```
 
+Kết quả EasyOCR:
 ![ẢNH UPLOAD](images/EasyOCR.png)
+
+Kết quả PaddleOCR: 
 ![ẢNH UPLOAD](images/PaddleOCR.png)
-![ẢNH UPLOAD](images/Compare.png)
 
 - VÍ DỤ: 
 
@@ -94,8 +96,11 @@ python -m models.ocr.run_pipeline --engine both --debug
 
 - Bước 3: Trực quan hoá kết quả: File data_visualization.ipynb giúp trực quan hoá so sánh Độ chính xác và Hiệu năng
 
-![ẢNH UPLOAD](images/Độ chính xác.png)
-![ẢNH UPLOAD](images/Thành phần.png)
+Độ chính xác tổng thể:
+![ẢNH UPLOAD](images/Acc.png)
+
+Độ chính xác thành phần
+![ẢNH UPLOAD](images/Part.png)
 
 --- 
 
