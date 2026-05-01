@@ -111,8 +111,10 @@ pip install ultralytics paddleocr paddlepaddle gradio opencv-python numpy
 ### Cách chạy demo
 Bước 1: Khởi chạy ứng dụng
 ```bash
-python app.py
+python -m frontend.app
 ```
+
+
 
 Bước 2: Mở giao diện web
 Sau khi chạy, mở trình duyệt và truy cập:

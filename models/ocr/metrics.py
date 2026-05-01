@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from dataclasses import dataclass, field
 # import models.ocr.config as config
-import config
+from models.ocr import config
 import re
 
 # Chia biển số thành các component để tính CA riêng cho từng phần

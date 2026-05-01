@@ -3,7 +3,7 @@ import time
 import numpy as np
 import easyocr
 from typing import Optional
-import config
+from models.ocr import config
 
 class EasyOCREngine:
     def __init__(
