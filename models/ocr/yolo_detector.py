@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from typing import Optional
 from ultralytics import YOLO
-import config
+from models.ocr import config
 
 class YoloDetector:
     def __init__(self, weights_path: str | None = None):

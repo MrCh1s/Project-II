@@ -2,7 +2,7 @@ import time
 import numpy as np
 from paddleocr import PaddleOCR
 from typing import Optional
-import config
+from models.ocr import config
 import logging
 logging.getLogger("ppocr").setLevel(logging.ERROR)
 

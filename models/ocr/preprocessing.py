@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from typing import Optional
 # import models.ocr.config as config
-import config
+from models.ocr import config
 
 # Image Enhancement BGR
 def enhance_plate_image(plate_crop: np.ndarray) -> np.ndarray:
