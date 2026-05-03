@@ -77,16 +77,30 @@ pip install easyocr paddleocr paddlepaddle          # paddlepaddle-gpu nếu có
 
 - Bước 2: Chạy pipeline cho cả hai mô hình (both) hoặc các mô hình riêng lẻ, --debug nếu muốn hiển thị chi tiết kết quả từng ảnh
 ```bash
-python run_pipeline.py [--engine {easyocr,paddleocr,both}] [--debug]
+python -m models.ocr.run_pipeline [--engine {easyocr,paddleocr,both}] [--debug]
 ```
+
+Kết quả EasyOCR:
+![ẢNH UPLOAD](images/EasyOCR.png)
+
+Kết quả PaddleOCR: 
+![ẢNH UPLOAD](images/PaddleOCR.png)
 
 - VÍ DỤ: 
 
 ```bash
-python run_pipeline.py --engine both --debug
+python -m models.ocr.run_pipeline --engine both --debug
 ```
 
+
+
 - Bước 3: Trực quan hoá kết quả: File data_visualization.ipynb giúp trực quan hoá so sánh Độ chính xác và Hiệu năng
+
+Độ chính xác tổng thể:
+![ẢNH UPLOAD](images/Acc.png)
+
+Độ chính xác thành phần
+![ẢNH UPLOAD](images/Part.png)
 
 --- 
 
@@ -105,7 +119,7 @@ Người dùng có thể tải ảnh lên giao diện web và hệ thống sẽ 
 Cài đặt các thư viện cần thiết:
 
 ```bash
-pip install ultralytics paddleocr paddlepaddle gradio opencv-python numpy
+pip install -r requirements.txt
 ```
 
 ### Cách chạy demo
