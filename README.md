@@ -9,7 +9,7 @@
   - **Quản lý nội bộ:** Kiểm soát phương tiện ra vào tại các cơ quan, trường học, khu công nghiệp.
  
 ## /. Dataset
-- **Nguồn dữ liệu:** [Kết hợp giữa dữ liệu thu thập thực tế tại Việt Nam và các bộ public dataset (Roboflow, Kaggle,...).](https://www.kaggle.com/datasets/nampham79/vietnam-car-license-plate)
+- **Nguồn dữ liệu:** https://www.kaggle.com/datasets/nampham79/vietnam-car-license-plate
 - **Số lượng ảnh:** Hơn 1700+ hình ảnh biển số xe các loại (chủ yếu là xe máy) với nhiều điều kiện ánh sáng, góc chụp và môi trường khác nhau.
 - **Ví dụ minh họa:**
   <br>
