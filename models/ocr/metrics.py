@@ -91,7 +91,11 @@ class TimingResult:
 
 # Confidence Score cho từng ảnh
 def aggregate_confidence(ocr_scores: list[float], aggregate: str = 'mean') -> float:
-    return float(np.mean(ocr_scores))
+    if not ocr_scores:
+        return 0.0
+    # Đảm bảo ocr_scores là list các số thực
+    scores = [float(s) for s in ocr_scores]
+    return float(np.mean(scores))
 
 # Per-image Result Record
 @dataclass

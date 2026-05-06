@@ -1,5 +1,5 @@
 import os
-# --- PADDLE WINDOWS FIXES ---
+# --- fix lỗi paddle trên Windows---
 os.environ["FLAGS_enable_pir_api"] = "0"
 os.environ["FLAGS_use_mkldnn"] = "0"
 
@@ -11,13 +11,15 @@ from models.ocr import config
 import logging
 logging.getLogger("ppocr").setLevel(logging.ERROR)
 
+
+# Class PaddleOCR: tạo ocr engine
 class PaddleOCREngine:
     def __init__(
         self,
         language: str | None = None,
-        use_angle_cls: bool | None = None,
+        use_angle_cls: bool | None = None,  # xoay text nếu bị nghiêng
     ):
-        self.lang = language or config.PADDLE_LANG
+        self.lang = language or config.PADDLE_LANG  # Nếu không truyền → dùng config
         self.use_angle_cls = use_angle_cls if use_angle_cls is not None else config.PADDLE_USE_ANGLE
         self._engine: Optional[PaddleOCR] = None
 
@@ -29,6 +31,7 @@ class PaddleOCREngine:
             self._engine = PaddleOCR(
                 use_angle_cls=self.use_angle_cls,
                 lang=self.lang,
+                enable_mkldnn=False  #tránh crash CPU trên windows
             )
         return self._engine
 
