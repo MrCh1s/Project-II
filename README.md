@@ -1,8 +1,21 @@
 #  Hệ thống nhận diện biển số xe 
 
+## /. Giới thiệu
+- **Bài toán:** Nhận diện biển số xe (Automatic License Plate Recognition - ALPR) là bài toán ứng dụng thị giác máy tính (Computer Vision) nhằm tự động định vị, cắt vùng chứa biển số và trích xuất các ký tự quang học (OCR) trên biển số xe từ hình ảnh hoặc video. Đây là một bài toán khó đòi hỏi sự kết hợp của nhiều mô hình do sự đa dạng về điều kiện ánh sáng, góc chụp hẹp, ảnh mờ, bị che khuất và sự khác biệt về loại biển số (biển 1 dòng, 2 dòng, ô tô, xe máy, biển vuông, dài,...).
+- **Ứng dụng thực tế:**
+  - **Quản lý bãi đỗ xe:** Tự động hóa quá trình ghi nhận xe ra vào, tính phí, kiểm soát phương tiện tại chung cư, trung tâm thương mại.
+  - **Giao thông thông minh:** Hệ thống thu phí không dừng (ETC), giám sát lưu lượng, điều phối giao thông tự động.
+  - **Giám sát an ninh:** Hỗ trợ phạt nguội vi phạm giao thông (vượt đèn đỏ, lấn làn), tìm kiếm xe mất cắp hoặc xe vi phạm pháp luật.
+  - **Quản lý nội bộ:** Kiểm soát phương tiện ra vào tại các cơ quan, trường học, khu công nghiệp.
+ 
+## /. Dataset
+- **Nguồn dữ liệu:** [Kết hợp giữa dữ liệu thu thập thực tế tại Việt Nam và các bộ public dataset (Roboflow, Kaggle,...).](https://www.kaggle.com/datasets/nampham79/vietnam-car-license-plate)
+- **Số lượng ảnh:** Hơn 1700+ hình ảnh biển số xe các loại (chủ yếu là xe máy) với nhiều điều kiện ánh sáng, góc chụp và môi trường khác nhau.
+- **Ví dụ minh họa:**
+  <br>
+  ![Ảnh mẫu trong Dataset](images/sample_dataset.jpg)
 - Dự án tập trung vào việc xây dựng hệ thống tự động phát hiện và nhận diện biển số xe tại Việt Nam. 
 - Hệ thống sử dụng mô hình phát hiện đối tượng mới nhất YOLOv11 kết hợp với các công cụ OCR mạnh mẽ (EasyOCR, PaddleOCR) để trích xuất thông tin chính xác từ hình ảnh.
-
 ## 🔄 Pipeline hệ thống
 
 Input Image → Detection (YOLO) → Crop Plate → OCR → Output Text
