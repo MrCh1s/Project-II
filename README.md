@@ -114,10 +114,10 @@ python -m models.ocr.run_pipeline --engine both --debug
 - Bước 3: Trực quan hoá kết quả: File data_visualization.ipynb giúp trực quan hoá so sánh Độ chính xác và Hiệu năng
 
 Độ chính xác tổng thể:
-![ẢNH UPLOAD](images/Acc.png)
+![ẢNH UPLOAD](images/Accuracy.png)
 
 Độ chính xác thành phần
-![ẢNH UPLOAD](images/Part.png)
+![ẢNH UPLOAD](images/Pat.png)
 
 --- 
 
