@@ -224,14 +224,74 @@ Dưới đây là bảng so sánh chi tiết giữa hai OCR Engine: EasyOCR và 
 
 ![ẢNH KẾT QUẢ](images/fallback.png)
 
-#### 3. Các lỗi ngoại cảnh khác
+#### 3. Các lỗi ngoại cảnh khác và sự cần thiết khi chọn lựa padding
 - Điều kiện ánh sáng: Biển số bị chói đèn pha hoặc quá tối trong hầm xe.
+- Mô hình YOLO cắt quá sát biển số, cắt quá sâu vào phần biển làm cho OCR không đọc được đầy đủ ký tự
 
 - Minh hoạ như hình bên dưới:
 
 ![ẢNH KẾT QUẢ](images/choi.png)
 
+## 8. Một vài kỹ thuật giúp cải thiện hiệu năng và độ chính xác
+### 8.1 Lựa chọn padding phù hợp
+- Việc cắt ảnh biển số (crop) dựa trên kết quả của YOLO thường rất sát với biên của biển. Tuy nhiên, điều này gây ra hai vấn đề lớn cho giai đoạn OCR:
+
+  - Mất mát thông tin biên: Trong các trường hợp biển số bị nghiêng (tilt) hoặc góc chụp không trực diện, việc cắt sát sẽ khiến các ký tự ở rìa bị mất một phần nét, dẫn đến nhận diện sai (ví dụ: số 0 thành C, số 8 thành 3).
+
+  - Thiếu ngữ cảnh cho mô hình: OCR cần một khoảng không gian trắng nhỏ xung quanh để định vị chính xác vị trí bắt đầu và kết thúc của ký tự.
+
+- Giải pháp: Áp dụng Padding mở rộng (thường từ 5-10% diện tích BBX) trước khi đưa vào mô hình nhận diện. Điều này giúp bảo toàn nguyên vẹn các nét của ký tự ngay cả khi biển số có độ biến dạng nhất định.
+
+### 8.2 Cơ chế giải mã CTC (Connectionist Temporal Classification) trong EasyOCR
+- EasyOCR sử dụng kiến trúc mạng CRNN (Convolutional Recurrent Neural Network) kết hợp với tầng giải mã CTC.
+
+- Đặc điểm: Khi mô hình quét qua một tấm ảnh biển số, nó không dự đoán ngay lập tức từng chữ cái. Thay vào đó, nó chia ảnh thành nhiều khung hình (frames) nhỏ theo chiều ngang. Mỗi khung hình sẽ trả về một dự đoán (ví dụ: 6, 6, -, 6, 6, 6, -, 3, 3).
+
+- Xử lý đặc biệt: Để có kết quả cuối cùng là 63, hệ thống thực hiện hai bước:
+
+  - Dồn các ký tự lặp: Loại bỏ các ký tự giống nhau đứng cạnh nhau.
+
+  - Loại bỏ ký tự trống (blank): Xóa các ký tự - được dùng để phân tách.
+
+- Hiện tượng nhân bản sinh số thừa: Mô hình quét qua ảnh theo từng cửa sổ trượt (sliding window). Nếu một ký tự có chiều ngang lớn hoặc xe di chuyển chậm, mô hình có thể nhận diện ký tự đó nhiều lần tại các vị trí kề nhau.
+
+- Ví dụ: Một biển số đúng là 26 có thể bị dự đoán nhầm thành chuỗi: [2, 2, <blank>, 2, 6, 6]. Nếu chỉ áp dụng thuật toán gom cụm (collapsing) cơ bản của CTC, kết quả trả về sẽ là 226 thay vì 26, gây ra sai số nghiêm trọng trong việc tra cứu biển số.
+
+- Tối ưu hóa: Trong mã nguồn, chúng tôi đã tinh chỉnh hàm hậu xử lý để lọc nhiễu, đặc biệt là xử lý dấu gạch ngang giữa biển số xe Việt Nam (ví dụ: 59-C1) để tránh mô hình nhầm lẫn với các ký tự rác.
+
+### 8.3 Xử lý theo lô
 
 
+### 8.4 Kết quả thực nghiệm sau khi áp dụng các kỹ thuật
 
+- Sau khi triển khai các kỹ thuật trên, hệ thống ghi nhận những cải thiện đáng kể:
+
+![ẢNH UPLOAD](images/Caithien.png)
+
+- Bảng so sánh Độ chính xác và Hiệu năng
+ - EasyOCR
+
+| Chỉ số / Thành phần | EasyOCR Baseline | EasyOCR Optimized | Cải thiện |
+|---|---|---|---|
+| Đúng Tỉnh | 88.57% | 93.71% | ↑ 5.14% |
+| Đúng Series | 69.14% | 77.43% | ↑ 8.29% |
+| Đúng Number | 69.71% | 88.57% | ↑ 18.86% |
+| Đúng Toàn Biển | 51.14% | 70.86% | ↑ 19.72% |
+| Mean Confidence | 0.7565 | 0.8039 | ↑ 0.0474 |
+| Trung bình OCR / ảnh | 54.94 ms | 211.25 ms | ↑ 156.31 ms |
+| Trung bình Total / ảnh | 146.17 ms | 296.23 ms | ↑ 150.06 ms |
+
+  - PaddleOCR 
+
+| Chỉ số (Metrics) | PaddleOCR | Optimized PaddleOCR | Cải thiện |
+|---|---|---|---|
+| Đúng Tỉnh | 81.71% | 92.57% | ↑ 10.86% |
+| Đúng Series | 79.14% | 91.43% | ↑ 12.29% |
+| Đúng Number | 66.86% | 90.00% | ↑ 23.14% |
+| Đúng Toàn Biển | 63.71% | 89.43% | ↑ 25.72% |
+| Mean Confidence | 0.8922 | 0.9523 | ↑ 0.0601 |
+| Trung bình OCR / ảnh | 440.49 ms | 537.59 ms | ↑ 97.10 ms |
+| Trung bình total / ảnh | 526.26 ms | 623.70 ms | ↑ 97.44 ms |
+
+- Nhận xét: Thời gian xử lý tăng do các trường hợp YOLO không phát hiện được biển số sẽ được chuyển sang PaddleOCR để xử lý toàn ảnh (fallback OCR), giúp tăng accuracy nhưng làm tăng latency.
 
