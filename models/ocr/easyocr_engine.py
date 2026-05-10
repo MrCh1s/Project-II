@@ -34,7 +34,17 @@ class EasyOCREngine:
         
         allowed_chars = '0123456789ABCDEFGHKLMNPSTUVXYZ-'
         start = time.perf_counter()
-        results = self.reader.readtext(image, allowlist=allowed_chars)
+        # results = self.reader.readtext(image, allowlist=allowed_chars)
+        results = self.reader.readtext(
+            image, 
+            allowlist=allowed_chars,
+            paragraph=False,     # Tuyệt đối không cho gộp đoạn
+            ycenter_ths=0.2,     # [QUAN TRỌNG] Giảm ngưỡng trục Y để cắt đứt liên kết giữa Tỉnh và Số
+            height_ths=0.7,      # Không gộp các ký tự chênh lệch chiều cao quá nhiều
+            width_ths=0.3,       # Tách bạch khoảng trắng theo phương ngang
+            mag_ratio=1.5        # Phóng to nội bộ giúp nhận diện khoảng trống (chống đẻ thừa số)
+        )
+        
         elapsed = time.perf_counter() - start
 
         parsed = []

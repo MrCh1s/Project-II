@@ -45,92 +45,141 @@ def build_ocr_engine(engine_name: str):
         return PaddleOCREngine()
     else:
         raise ValueError(f"Unknown engine: {engine_name}")
+    
 
-# YOLO detect → crop → enhance → OCR → metrics.
+def apply_ocr_correction(text: str) -> str:
+    """
+    Hàm Post-processing: Ép kiểu OCR dựa trên luật định dạng vị trí biển số xe máy.
+    Định dạng mục tiêu: [2 Tỉnh (Số)] - [1 Chữ][1 Số] [4-5 Số]
+    """
+    # Xóa các ký tự đặc biệt, khoảng trắng, dấu gạch ngang để lấy chuỗi thô (VD: "60855723")
+    clean_text = "".join(c for c in text.upper() if c.isalnum())
+    
+    # Biển số xe máy thông thường có 8 hoặc 9 ký tự. 
+    # Nếu OCR đọc thiếu quá nhiều, trả về nguyên bản để tránh cắt chuỗi bị lỗi index.
+    if len(clean_text) < 8:
+        return text 
+        
+    # --- TỪ ĐIỂN MAPPING ---
+    # Ép sang CHỮ (Áp dụng cho ký tự Series 1)
+    NUM_TO_CHAR = {
+        '8': 'B', '5': 'S', '0': 'D', '2': 'Z', '6': 'G', 
+        '7': 'T', '1': 'V', '3': 'E', '4': 'A', '9': 'P'
+    }
+    
+    # Ép sang SỐ (Áp dụng cho Mã Tỉnh, Series 2, và dãy Số cuối)
+    CHAR_TO_NUM = {v: k for k, v in NUM_TO_CHAR.items()}
+    # Bổ sung thêm các luật nhiễu thường gặp nhất:
+    CHAR_TO_NUM.update({
+        'O': '0', 'Q': '0', 'D': '0',
+        'T': '1',  # Theo rule của bạn: FT -> F1
+        'I': '1', 'L': '4',
+        'B': '8', 'S': '5', 'G': '6', 'Z': '2'
+    })
+    
+    # --- BÓC TÁCH VỊ TRÍ ---
+    province = clean_text[:2]   # 2 ký tự đầu
+    series   = clean_text[2:4]  # 2 ký tự tiếp theo
+    number   = clean_text[4:]   # 4 hoặc 5 ký tự cuối cùng
+    
+    # 1. SỬA TỈNH: Ép 2 ký tự đầu BẮT BUỘC phải là SỐ
+    corr_province = "".join([CHAR_TO_NUM.get(c, c) for c in province])
+    
+    # 2. SỬA SERIES: Ép ký tự đầu là CHỮ, ký tự sau là SỐ
+    s1 = NUM_TO_CHAR.get(series[0], series[0]) 
+    s2 = CHAR_TO_NUM.get(series[1], series[1]) 
+    corr_series = f"{s1}{s2}"
+    
+    # 3. SỬA DÃY SỐ: Ép toàn bộ phần đuôi BẮT BUỘC phải là SỐ
+    corr_number = "".join([CHAR_TO_NUM.get(c, c) for c in number])
+
+    if len(corr_number) > 5:
+        corr_number = corr_number[-5:] 
+    
+    # Format lại thành chuỗi chuẩn: XX-XX XXXXX (Khớp với file Ground Truth)
+    return f"{corr_province}-{corr_series} {corr_number}"
+
 def process_image(
     image_path: str,
     yolo_detector: YoloDetector,
     ocr_engine,
     engine_name: str,
+    fallback_engine: PaddleOCREngine = None, # Thêm engine dự phòng
     ground_truth: dict | None = None,
     debug: bool = False,
 ) -> OcrResult | None:
     
     image_name = os.path.basename(image_path)
     image = cv2.imread(image_path)
+    if image is None: return None
 
-    if image is None:
-        print(f"[WARN] Cannot read: {image_path}")
-        return None
+    final_plate = "NO_TEXT"
+    confidence = 0.0
+    yolo_time = 0.0
+    ocr_time = 0.0
 
-    # YOLO Detection 
+    # --- BƯỚC 1: CHẠY PIPELINE CHÍNH (YOLO + CROP) ---
     t0 = time.perf_counter()
     detections = yolo_detector.detect(image)
     yolo_time = time.perf_counter() - t0
 
-    if not detections:
-        result = OcrResult(
-            image_name=image_name,
-            predicted_plate='NO_PLATE',
-            confidence=0.0,
-            timing=TimingResult(image_name=image_name, yolo_time=yolo_time, total_time=time.perf_counter() - t0),
-            engine=engine_name,
-        )
-        return result
+    if detections:
+        det = detections[0]
+        crop = det['crop']
+        enhanced = enhance_plate_image(crop)
 
-    det  = detections[0]
-    crop = det['crop']
-    enhanced = enhance_plate_image(crop)
+        raw_data = ocr_engine.readtext(enhanced)
+        items = raw_data.get('items', [])
+        ocr_time = raw_data.get('elapsed', 0.0)
 
-    raw_data = ocr_engine.readtext(enhanced)
-    items = raw_data.get('items', [])
-    ocr_time = raw_data.get('elapsed', 0.0)
-
-    lines = []
-    scores = []
-
-    # OCR
-    if engine_name == 'easyocr':
+        # Trích xuất text (giữ nguyên logic cũ của bạn)
+        lines = []
+        scores = []
         if items:
-            # Xử lý ảnh nghiêng
-            items_sorted = sorted(items, key=lambda x: sum(pt[1] for pt in x['bbox'])/len(x['bbox']))
+            if engine_name == 'easyocr':
+                items_sorted = sorted(items, key=lambda x: sum(pt[1] for pt in x['bbox'])/len(x['bbox']))
+            else: # paddleocr
+                items_sorted = sorted(items, key=lambda x: x['y_center'])
+            
             lines = [it['text'] for it in items_sorted]
             scores = [it['confidence'] for it in items_sorted]
+            
+            raw_plate = " ".join([str(l).strip() for l in lines if str(l).strip()])
+            final_plate = apply_ocr_correction(raw_plate)
+            confidence = aggregate_confidence(scores)
 
-    elif engine_name == 'paddleocr':
-        if items:
-            items_sorted = sorted(items, key=lambda x: x['y_center'])
-            lines = [it['text'] for it in items_sorted]
-            scores = [it['confidence'] for it in items_sorted]
+    # --- BƯỚC 2: LUỒNG FALLBACK (NẾU NO_PLATE HOẶC NO_TEXT) ---
+    # Nếu kết quả vẫn là NO_PLATE hoặc NO_TEXT, cho PaddleOCR quét toàn ảnh gốc
+    if (not detections or final_plate == "NO_TEXT") and fallback_engine:
+        if debug:
+            reason = "YOLO không tìm thấy biển" if not detections else "OCR trên vùng cắt thất bại"
+            print(f"    [Fallback] {reason}. Đang chuyển ảnh gốc cho PaddleOCR...")
 
-    if not lines:
-        final_plate = "NO_TEXT"
-    else:
-        # Ví dụ: lines = ['29A1', '12345'] -> "29A1 12345"
-        final_plate = " ".join([str(l).strip() for l in lines if str(l).strip()])
-        
-        if not final_plate:
-            final_plate = "NO_TEXT"
+        fallback_data = fallback_engine.readtext(image) # Quét trên ảnh gốc
+        f_items = fallback_data.get('items', [])
+        ocr_time += fallback_data.get('elapsed', 0.0) # Cộng dồn thời gian
 
-    # Aggregate metrics
-    confidence = aggregate_confidence(scores)
-    total_time = yolo_time + ocr_time
+        if f_items:
+            f_items_sorted = sorted(f_items, key=lambda x: x['y_center'])
+            f_lines = [it['text'] for it in f_items_sorted]
+            f_scores = [it['confidence'] for it in f_items_sorted]
+            
+            f_raw_plate = " ".join([str(l).strip() for l in f_lines if str(l).strip()])
+            f_final = apply_ocr_correction(f_raw_plate)
+            
+            # Chỉ lấy kết quả fallback nếu nó ra được biển số hợp lệ
+            if f_final != "NO_TEXT":
+                final_plate = f_final
+                confidence = aggregate_confidence(f_scores)
+                if debug: print(f"    [Success] Fallback cứu thành công: {final_plate}")
 
-    timing = TimingResult(
-        image_name=image_name,
-        yolo_time=yolo_time,
-        ocr_time=ocr_time,
-        total_time=total_time,
-    )
-
+    # --- PHẦN CÒN LẠI (Timing, Metrics...) GIỮ NGUYÊN ---
+    timing = TimingResult(image_name=image_name, yolo_time=yolo_time, ocr_time=ocr_time, total_time=yolo_time + ocr_time)
+    
     # Evaluate against ground truth
     gt_dict = ground_truth.get(image_name, {}) if ground_truth else {}
     gt_full = gt_dict.get('full_plate', '')
-
-    ca_province = False
-    ca_series    = False
-    ca_number    = False
-    ca_full      = False
+    ca_province = ca_series = ca_number = ca_full = False
 
     if gt_full:
         ca_province = component_accuracy(final_plate, gt_full, 'province')
@@ -139,20 +188,127 @@ def process_image(
         ca_full     = component_accuracy(final_plate, gt_full, 'full')
 
     if debug:
-        tag = "[OK]"
-        print(f"  {tag} {image_name} → {final_plate}  (conf={confidence:.3f})")
+        print(f"  [OK] {image_name} → {final_plate} (conf={confidence:.3f})")
 
-    return OcrResult(
-        image_name=image_name,
-        predicted_plate=final_plate,
-        confidence=confidence,
-        timing=timing,
-        ca_province=ca_province,
-        ca_series=ca_series,
-        ca_number=ca_number,
-        ca_full=ca_full,
-        engine=engine_name,
-    )
+    return OcrResult(image_name=image_name, predicted_plate=final_plate, confidence=confidence, timing=timing,
+                     ca_province=ca_province, ca_series=ca_series, ca_number=ca_number, ca_full=ca_full, engine=engine_name)
+
+# YOLO detect → crop → enhance → OCR → metrics.
+# def process_image(
+#     image_path: str,
+#     yolo_detector: YoloDetector,
+#     ocr_engine,
+#     engine_name: str,
+#     ground_truth: dict | None = None,
+#     debug: bool = False,
+# ) -> OcrResult | None:
+    
+#     image_name = os.path.basename(image_path)
+#     image = cv2.imread(image_path)
+
+#     if image is None:
+#         print(f"[WARN] Cannot read: {image_path}")
+#         return None
+
+#     # YOLO Detection 
+#     t0 = time.perf_counter()
+#     detections = yolo_detector.detect(image)
+#     yolo_time = time.perf_counter() - t0
+
+#     if not detections:
+#         result = OcrResult(
+#             image_name=image_name,
+#             predicted_plate='NO_PLATE',
+#             confidence=0.0,
+#             timing=TimingResult(image_name=image_name, yolo_time=yolo_time, total_time=time.perf_counter() - t0),
+#             engine=engine_name,
+#         )
+#         return result
+
+#     det  = detections[0]
+#     crop = det['crop']
+#     enhanced = enhance_plate_image(crop)
+
+#     raw_data = ocr_engine.readtext(enhanced)
+#     items = raw_data.get('items', [])
+#     ocr_time = raw_data.get('elapsed', 0.0)
+
+#     lines = []
+#     scores = []
+
+#     # OCR
+#     if engine_name == 'easyocr':
+#         if items:
+#             # Xử lý ảnh nghiêng
+#             items_sorted = sorted(items, key=lambda x: sum(pt[1] for pt in x['bbox'])/len(x['bbox']))
+#             lines = [it['text'] for it in items_sorted]
+#             scores = [it['confidence'] for it in items_sorted]
+
+#     elif engine_name == 'paddleocr':
+#         if items:
+#             items_sorted = sorted(items, key=lambda x: x['y_center'])
+#             lines = [it['text'] for it in items_sorted]
+#             scores = [it['confidence'] for it in items_sorted]
+
+#     if not lines:
+#         final_plate = "NO_TEXT"
+#     # else:
+#     #     # Ví dụ: lines = ['29A1', '12345'] -> "29A1 12345"
+#     #     final_plate = " ".join([str(l).strip() for l in lines if str(l).strip()])
+        
+#     #     if not final_plate:
+#     #         final_plate = "NO_TEXT"
+#     else:
+#         # Ghép lines thành chuỗi thô ban đầu (VD: "60-85 5723" hoặc "77 FT 30541")
+#         raw_plate = " ".join([str(l).strip() for l in lines if str(l).strip()])
+        
+#         if not raw_plate:
+#             final_plate = "NO_TEXT"
+#         else:
+#             # GỌI HÀM POST-PROCESSING TẠI ĐÂY
+#             final_plate = apply_ocr_correction(raw_plate)
+
+#     # Aggregate metrics
+#     confidence = aggregate_confidence(scores)
+#     total_time = yolo_time + ocr_time
+
+#     timing = TimingResult(
+#         image_name=image_name,
+#         yolo_time=yolo_time,
+#         ocr_time=ocr_time,
+#         total_time=total_time,
+#     )
+
+#     # Evaluate against ground truth
+#     gt_dict = ground_truth.get(image_name, {}) if ground_truth else {}
+#     gt_full = gt_dict.get('full_plate', '')
+
+#     ca_province = False
+#     ca_series    = False
+#     ca_number    = False
+#     ca_full      = False
+
+#     if gt_full:
+#         ca_province = component_accuracy(final_plate, gt_full, 'province')
+#         ca_series   = component_accuracy(final_plate, gt_full, 'series')
+#         ca_number   = component_accuracy(final_plate, gt_full, 'number')
+#         ca_full     = component_accuracy(final_plate, gt_full, 'full')
+
+#     if debug:
+#         tag = "[OK]"
+#         print(f"  {tag} {image_name} → {final_plate}  (conf={confidence:.3f})")
+
+#     return OcrResult(
+#         image_name=image_name,
+#         predicted_plate=final_plate,
+#         confidence=confidence,
+#         timing=timing,
+#         ca_province=ca_province,
+#         ca_series=ca_series,
+#         ca_number=ca_number,
+#         ca_full=ca_full,
+#         engine=engine_name,
+#     )
 
 # Batch pipeline
 def run_pipeline(
@@ -167,6 +323,9 @@ def run_pipeline(
 
     yolo = YoloDetector()
     ocr  = build_ocr_engine(engine_name)
+
+    # SUA DAY
+    fallback = PaddleOCREngine() if engine_name == 'easyocr' else ocr
 
     # Danh sách ảnh
     valid_exts = ('.jpg', '.jpeg', '.png')
@@ -187,6 +346,7 @@ def run_pipeline(
             yolo_detector=yolo,
             ocr_engine=ocr,
             engine_name=engine_name,
+            fallback_engine=fallback, # Truyền fallback vào đây
             ground_truth=ground_truth,
             debug=debug,
         )

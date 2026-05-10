@@ -15,7 +15,7 @@ METRICS_CSV       = os.path.join(OUTPUT_DIR, "metrics.csv")
 # YOLO settings
 YOLO_CONF_THRESHOLD  = 0.25
 YOLO_IOU_THRESHOLD   = 0.45
-BBOX_PADDING         = 5   
+BBOX_PADDING         = 15
 
 # OCR settings
 PADDLE_LANG       = "en"

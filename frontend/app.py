@@ -57,8 +57,8 @@ def process_license_plate(image):
             h, w = img_bgr.shape[:2]
             px1 = max(0, x1 - padding)
             py1 = max(0, y1 - padding)
-            px2 = min(w, x2 + padding)
-            py2 = min(h, y2 + padding)
+            px2 = min(w, x2 + padding + 10)
+            py2 = min(h, y2 + padding + 10)
             
             plate_crop_padded = img_bgr[py1:py2, px1:px2]
             processed_crop = enhance_plate_image(plate_crop_padded)

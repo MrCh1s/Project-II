@@ -5,6 +5,7 @@ from typing import Optional
 # import models.ocr.config as config
 from models.ocr import config
 
+
 # Image Enhancement BGR
 def enhance_plate_image(plate_crop: np.ndarray) -> np.ndarray:
     # Resize ×2
@@ -19,4 +20,7 @@ def enhance_plate_image(plate_crop: np.ndarray) -> np.ndarray:
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     contrasted = clahe.apply(gray)
     return cv2.cvtColor(contrasted, cv2.COLOR_GRAY2BGR)
+
+
+
 
