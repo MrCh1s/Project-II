@@ -263,7 +263,7 @@ Dưới đây là bảng so sánh chi tiết giữa hai OCR Engine: EasyOCR và 
 
 - **Vấn đề:** Trong quá trình phát triển và đánh giá mô hình, việc chạy kiểm thử thủ công từng bức ảnh đơn lẻ sẽ tốn rất nhiều thời gian và không thể cung cấp được các chỉ số thống kê về độ chính xác tổng thể của hệ thống.
 
-- **Giải pháp:** Xây dựng quy trình `Batch Pipeline` tự động (được tích hợp trong `models/ocr/run_pipeline.py`). Hệ thống sẽ tự động đọc toàn bộ ảnh từ thư mục kiểm thử, chạy qua mạng nhận diện YOLO và OCR, tổng hợp tất cả kết quả lại thành một tiến trình duy nhất.
+- **Giải pháp:** Xây dựng quy trình `Batch Pipeline` tự động (được tích hợp trong `models/ocr/batch_process.py`). Hệ thống sẽ tự động đọc toàn bộ ảnh từ thư mục kiểm thử, chạy qua mạng nhận diện YOLO và OCR, tổng hợp tất cả kết quả lại thành một tiến trình duy nhất. Lệnh thực thi: `python -m models.ocr.batch_process --engine paddleocr --debug`
 
 - **Ưu điểm:**
   - **Tự động hóa toàn trình:** Xử lý và trích xuất biển số cho hàng trăm bức ảnh chỉ bằng một câu lệnh duy nhất mà không cần can thiệp thủ công.
