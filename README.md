@@ -154,18 +154,34 @@ python -m frontend.app
 Sau khi chạy, mở trình duyệt và truy cập:
 http://127.0.0.1:7860
 
-**Bước 3:** Sử dụng hệ thống
-1. Nhấn vào Upload để chọn ảnh
+**Bước 3:** Sử dụng hệ thống (Giao diện 2 Chế độ)
+Giao diện Web hiện tại cung cấp 2 tính năng chính để bạn có thể kiểm thử:
 
-![ẢNH UPLOAD](images/upload.png)
+**1. Chế độ 1 ảnh:**
+- Nhấn vào Upload để tải lên 1 bức ảnh biển số.
 
-2. Chờ hệ thống xử lý (vài giây)
+![ẢNH UPLOAD](images/upload1.png)
 
-![ẢNH XỬ LÝ](images/processing.png)
+- Chờ vài giây để hệ thống phân tích.
 
-3. Xem kết quả hiển thị
+![ẢNH XỬ LÝ](images/processing1.png)
 
-![ẢNH KẾT QUẢ](images/result.png)
+- Hệ thống sẽ hiển thị ảnh đã vẽ khung (Xanh lá cho YOLO, Cam cho Fallback), kèm theo chữ dự đoán và độ tin cậy.
+
+![ẢNH KẾT QUẢ](images/result1.png)
+
+**2. Chế độ Xử lý theo lô :**
+- Chuyển sang Tab "Chế độ Xử lý theo lô".
+
+![ẢNH UPLOAD BATCH](images/upload2.png)
+
+- Nhấn "Chạy" và chờ hệ thống phân tích.
+
+![ẢNH XỬ LÝ BATCH](images/processing2.png)
+
+- Hệ thống sẽ hiển thị kết quả chi tiết thành một bảng dữ liệu gọn gàng trên màn hình.
+
+![ẢNH KẾT QUẢ BATCH](images/result2.png)
 
 ---
 
