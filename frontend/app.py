@@ -1,6 +1,7 @@
 import cv2
 import gradio as gr
 import numpy as np
+import pandas as pd
 from models.ocr.yolo_detector import YoloDetector  
 from models.ocr.paddleocr_engine import PaddleOCREngine 
 from models.ocr.preprocessing import enhance_plate_image 
@@ -8,6 +9,7 @@ from models.ocr.preprocessing import enhance_plate_image
 detector = YoloDetector() 
 ocr_engine = PaddleOCREngine()
 
+# ================= SINGLE IMAGE =================
 def process_license_plate(image):
     try:
         # Safety check
@@ -83,17 +85,78 @@ def process_license_plate(image):
         print(f"Lỗi hệ thống: {e}")
         return image, "ERROR", 0.0
 
-demo = gr.Interface(
-    fn=process_license_plate,
-    inputs=gr.Image(label="Tải ảnh xe lên"),
-    outputs=[
-        gr.Image(label="Kết quả phát hiện"),
-        gr.Textbox(label="Biển số dự đoán (Raw Text)"),
-        gr.Number(label="Độ tin cậy")
-    ],
-    title="Nhận Diện Biển Số - OCR Baseline",
-    theme=gr.themes.Soft()
-)
+
+# ================= BATCH MODE =================
+def process_batch(files):
+    results = []
+
+    if not files:
+        return pd.DataFrame()
+
+    for file in files:
+        # Lấy tên file để hiển thị trên bảng
+        filename = file.name.replace("\\", "/").split("/")[-1] 
+        
+        # Đọc ảnh từ đường dẫn file
+        image = cv2.imread(file.name)
+        if image is None:
+            continue
+            
+        # Do cv2.imread trả về BGR, nhưng hàm process_license_plate cần RGB (giống gradio image)
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        # Gọi hàm xử lý 1 ảnh
+        _, plate, conf = process_license_plate(image_rgb)
+
+        results.append({
+            "Tên ảnh (Filename)": filename,
+            "Biển số dự đoán (Predicted Plate)": plate,
+            "Độ tin cậy (Confidence)": conf
+        })
+
+    df = pd.DataFrame(results)
+    return df
+
+
+# ================= UI =================
+with gr.Blocks(theme=gr.themes.Soft()) as demo:
+
+    gr.Markdown("# Nhận Diện Biển Số Xe")
+
+    with gr.Tab("Chế độ 1 ảnh"):
+        image_input = gr.Image(label="Tải ảnh xe lên")
+        image_output = gr.Image(label="Kết quả phát hiện")
+        plate_output = gr.Textbox(label="Biển số dự đoán")
+        conf_output = gr.Number(label="Độ tin cậy")
+
+        btn_single = gr.Button("Chạy")
+
+        btn_single.click(
+            fn=process_license_plate,
+            inputs=image_input,
+            outputs=[image_output, plate_output, conf_output]
+        )
+
+    with gr.Tab("Chế độ Xử lý theo lô"):
+        # Dùng gr.File để tải lên nhiều ảnh cùng lúc
+        batch_input = gr.File(
+            file_count="multiple",
+            file_types=["image"],
+            label="Kéo thả / Chọn nhiều ảnh cùng lúc"
+        )
+
+        batch_output = gr.Dataframe(
+            label="Kết quả xử lý hàng loạt",
+            headers=["Tên ảnh", "Biển số dự đoán", "Độ tin cậy"]
+        )
+
+        btn_batch = gr.Button("Chạy")
+
+        btn_batch.click(
+            fn=process_batch,
+            inputs=batch_input,
+            outputs=batch_output
+        )
 
 if __name__ == "__main__":
     demo.launch()

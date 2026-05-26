@@ -154,18 +154,34 @@ python -m frontend.app
 Sau khi chạy, mở trình duyệt và truy cập:
 http://127.0.0.1:7860
 
-**Bước 3:** Sử dụng hệ thống
-1. Nhấn vào Upload để chọn ảnh
+**Bước 3:** Sử dụng hệ thống (Giao diện 2 Chế độ)
+Giao diện Web hiện tại cung cấp 2 tính năng chính để bạn có thể kiểm thử:
 
-![ẢNH UPLOAD](images/upload.png)
+**1. Chế độ 1 ảnh:**
+- Nhấn vào Upload để tải lên 1 bức ảnh biển số.
 
-2. Chờ hệ thống xử lý (vài giây)
+![ẢNH UPLOAD](images/upload1.png)
 
-![ẢNH XỬ LÝ](images/processing.png)
+- Chờ vài giây để hệ thống phân tích.
 
-3. Xem kết quả hiển thị
+![ẢNH XỬ LÝ](images/processing1.png)
 
-![ẢNH KẾT QUẢ](images/result.png)
+- Hệ thống sẽ hiển thị ảnh đã vẽ khung (Xanh lá cho YOLO, Cam cho Fallback), kèm theo chữ dự đoán và độ tin cậy.
+
+![ẢNH KẾT QUẢ](images/result1.png)
+
+**2. Chế độ Xử lý theo lô :**
+- Chuyển sang Tab "Chế độ Xử lý theo lô".
+
+![ẢNH UPLOAD BATCH](images/upload2.png)
+
+- Nhấn "Chạy" và chờ hệ thống phân tích.
+
+![ẢNH XỬ LÝ BATCH](images/processing2.png)
+
+- Hệ thống sẽ hiển thị kết quả chi tiết thành một bảng dữ liệu gọn gàng trên màn hình.
+
+![ẢNH KẾT QUẢ BATCH](images/result2.png)
 
 ---
 
@@ -259,8 +275,16 @@ Dưới đây là bảng so sánh chi tiết giữa hai OCR Engine: EasyOCR và 
 
 - Tối ưu hóa: Trong mã nguồn, chúng tôi đã tinh chỉnh hàm hậu xử lý để lọc nhiễu, đặc biệt là xử lý dấu gạch ngang giữa biển số xe Việt Nam (ví dụ: 59-C1) để tránh mô hình nhầm lẫn với các ký tự rác.
 
-### 8.3 Xử lý theo lô
+### 8.3 Xử lý theo lô 
 
+- **Vấn đề:** Trong quá trình phát triển và đánh giá mô hình, việc chạy kiểm thử thủ công từng bức ảnh đơn lẻ sẽ tốn rất nhiều thời gian và không thể cung cấp được các chỉ số thống kê về độ chính xác tổng thể của hệ thống.
+
+- **Giải pháp:** Xây dựng quy trình `Batch Pipeline` tự động (được tích hợp trong `models/ocr/batch_process.py`). Hệ thống sẽ tự động đọc toàn bộ ảnh từ thư mục kiểm thử, chạy qua mạng nhận diện YOLO và OCR, tổng hợp tất cả kết quả lại thành một tiến trình duy nhất. Lệnh thực thi: `python -m models.ocr.batch_process --engine paddleocr --debug`
+
+- **Ưu điểm:**
+  - **Tự động hóa toàn trình:** Xử lý và trích xuất biển số cho hàng trăm bức ảnh chỉ bằng một câu lệnh duy nhất mà không cần can thiệp thủ công.
+  - **Tính toán Metrics tổng thể:** Các dự đoán sẽ được đối chiếu ngay lập tức với file Ground Truth để tính toán tự động các độ đo chuẩn xác (Accuracy) cho từng thành phần (Tỉnh/Thành, Số seri, Số thứ tự).
+  - **Hỗ trợ Benchmarking:** Là cơ sở vững chắc giúp so sánh hiệu năng trực tiếp (A/B Test) giữa hai bộ OCR (EasyOCR và PaddleOCR) trên cùng một tập dữ liệu chuẩn.
 
 ### 8.4 Kết quả thực nghiệm sau khi áp dụng các kỹ thuật
 
