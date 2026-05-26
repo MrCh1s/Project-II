@@ -6,4 +6,6 @@ datasets/
 tempCodeRunnerFile.py
 venv_project2
 data/vietnam-car-license-plate/CarTGMT
+.DS_Storemodels/ocr/full_ocr_error_report.png
 .DS_Store
+models/ocr/full_ocr_error_report.png
