@@ -275,16 +275,17 @@ Dưới đây là bảng so sánh chi tiết giữa hai OCR Engine: EasyOCR và 
 
 - Tối ưu hóa: Trong mã nguồn, chúng tôi đã tinh chỉnh hàm hậu xử lý để lọc nhiễu, đặc biệt là xử lý dấu gạch ngang giữa biển số xe Việt Nam (ví dụ: 59-C1) để tránh mô hình nhầm lẫn với các ký tự rác.
 
-### 8.3 Xử lý theo lô 
+### 8.3 Xử lý theo lô
 
-- **Vấn đề:** Trong quá trình phát triển và đánh giá mô hình, việc chạy kiểm thử thủ công từng bức ảnh đơn lẻ sẽ tốn rất nhiều thời gian và không thể cung cấp được các chỉ số thống kê về độ chính xác tổng thể của hệ thống.
+**Vấn đề:** Trong quá trình phát triển và đánh giá mô hình, việc kiểm thử tuần tự từng ảnh đơn lẻ gây tốn thời gian và khó thu thập các chỉ số thống kê tổng thể trên tập dữ liệu lớn.
 
-- **Giải pháp:** Xây dựng quy trình `Batch Pipeline` tự động (được tích hợp trong `models/ocr/batch_process.py`). Hệ thống sẽ tự động đọc toàn bộ ảnh từ thư mục kiểm thử, chạy qua mạng nhận diện YOLO và OCR, tổng hợp tất cả kết quả lại thành một tiến trình duy nhất. Lệnh thực thi: `python -m models.ocr.batch_process --engine paddleocr --debug`
+**Giải pháp:** Nhóm triển khai một hệ thống Batch Pipeline tự động (tại `models/ocr/batch_process.py`) nhằm mở rộng khả năng xử lý dữ liệu và hỗ trợ tự động hóa quy trình đánh giá mô hình. Hệ thống cho phép nạp đồng thời nhiều ảnh đầu vào, thực hiện phát hiện biển số bằng YOLOv11 theo lô, sau đó tiếp tục xử lý OCR và tổng hợp kết quả trong một pipeline thống nhất.
 
-- **Ưu điểm:**
-  - **Tự động hóa toàn trình:** Xử lý và trích xuất biển số cho hàng trăm bức ảnh chỉ bằng một câu lệnh duy nhất mà không cần can thiệp thủ công.
-  - **Tính toán Metrics tổng thể:** Các dự đoán sẽ được đối chiếu ngay lập tức với file Ground Truth để tính toán tự động các độ đo chuẩn xác (Accuracy) cho từng thành phần (Tỉnh/Thành, Số seri, Số thứ tự).
-  - **Hỗ trợ Benchmarking:** Là cơ sở vững chắc giúp so sánh hiệu năng trực tiếp (A/B Test) giữa hai bộ OCR (EasyOCR và PaddleOCR) trên cùng một tập dữ liệu chuẩn.
+**Lệnh thực thi:**
+
+```bash
+python -m models.ocr.batch_process --engine paddleocr --debug
+```
 
 ### 8.4 Kết quả thực nghiệm sau khi áp dụng các kỹ thuật
 
