@@ -25,14 +25,12 @@ def process_license_plate(image):
         best_plate = "OCR_FAILED"
         best_conf = 0.0
         
-        # FALLBACK STRATEGY: YOLO failed, use OCR on the whole image
+        # FALLBACK STRATEGY
         if not detections:
             print("YOLO failed to find plate. Triggering OCR Fallback...")
-            # Pass the entire original image to PaddleOCR
             ocr_result = ocr_engine.readtext(img_bgr)
             items = ocr_result['items']
-            
-            # If even OCR fails to find text, then give up
+    
             if not items:
                 return image, "Không phát hiện biển số", 0.0
                 
@@ -40,17 +38,16 @@ def process_license_plate(image):
             confidences = [it['confidence'] for it in items]
             
             best_plate = " ".join(texts)
-            avg_conf = sum(confidences) / len(confidences)
+            avg_conf = sum(confidences) / len(confidences) 
             best_conf = round(float(avg_conf), 4)
 
-            # Draw ORANGE boxes so you know the Fallback worked
             for it in items:
                 poly = np.array(it['bbox'], np.int32).reshape((-1, 1, 2))
                 cv2.polylines(img_draw, [poly], isClosed=True, color=(0, 165, 255), thickness=3)
 
             return cv2.cvtColor(img_draw, cv2.COLOR_BGR2RGB), best_plate, best_conf
 
-        # NORMAL STRATEGY: YOLO successfully found the plate
+        # NORMAL STRATEGY
         for det in detections:
             box = det['box']
             x1, y1, x2, y2 = [int(v) for v in box]
@@ -63,11 +60,11 @@ def process_license_plate(image):
             py2 = min(h, y2 + padding + 10)
             
             plate_crop_padded = img_bgr[py1:py2, px1:px2]
-            processed_crop = enhance_plate_image(plate_crop_padded)
-            ocr_result = ocr_engine.readtext(processed_crop)
+            processed_crop = enhance_plate_image(plate_crop_padded) #Tiền xử lý ảnh biển số
+            ocr_result = ocr_engine.readtext(processed_crop) # Nhận diện biển số
             items = ocr_result['items']
             
-            if items:
+            if items: 
                 texts = [it['text'] for it in items]
                 confidences = [it['confidence'] for it in items]
                 
@@ -81,45 +78,99 @@ def process_license_plate(image):
 
         return cv2.cvtColor(img_draw, cv2.COLOR_BGR2RGB), best_plate, best_conf
 
-    except Exception as e:
+    except Exception as e: 
         print(f"Lỗi hệ thống: {e}")
         return image, "ERROR", 0.0
 
 
 # ================= BATCH MODE =================
-def process_batch(files):
-    results = []
+def process_batch(files): 
+    results = [] # Khởi tạo danh sách chứa kết quả
 
-    if not files:
+    if not files: # Nếu không có ảnh nào được tải lên
+        return pd.DataFrame() # Trả về DataFrame rỗng
+
+    filenames = [] # Tạo danh sách chứa tên ảnh
+    images_bgr = [] # Tạo danh sách chứa ảnh
+    
+    # 1. Đọc và gom tất cả ảnh vào một list
+    for file in files: 
+        filename = file.name.replace("\\", "/").split("/")[-1]  # Tách tên ảnh từ đường dẫn
+        image = cv2.imread(file.name) # Đọc ảnh
+        if image is not None: # Kiểm tra xem ảnh có đọc được không
+            filenames.append(filename) 
+            images_bgr.append(image)
+
+    if not images_bgr:
         return pd.DataFrame()
 
-    for file in files:
-        # Lấy tên file để hiển thị trên bảng
-        filename = file.name.replace("\\", "/").split("/")[-1] 
-        
-        # Đọc ảnh từ đường dẫn file
-        image = cv2.imread(file.name)
-        if image is None:
-            continue
-            
-        # Do cv2.imread trả về BGR, nhưng hàm process_license_plate cần RGB (giống gradio image)
-        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    # 2. YOLO nhận diện theo lô 
+    # Tối ưu tốc độ bằng cách xử lý nhiều ảnh cùng lúc  
+    batch_size = 8
+    batch_detections = detector.detect_batch(images_bgr, batch_size=batch_size) 
 
-        # Gọi hàm xử lý 1 ảnh
-        _, plate, conf = process_license_plate(image_rgb)
+    # 3. Duyệt qua kết quả của từng ảnh để chạy OCR
+    for i, detections in enumerate(batch_detections): 
+        filename = filenames[i]
+        image = images_bgr[i]
+        
+        best_plate = "OCR_FAILED"
+        best_conf = 0.0
+
+        if not detections: 
+            print(f"YOLO failed to find plate for {filename}. Triggering OCR Fallback...")
+            # FALLBACK STRATEGY
+            ocr_result = ocr_engine.readtext(image)
+            items = ocr_result.get('items', [])
+            
+            if items:
+                texts = [it['text'] for it in items]
+                confidences = [it['confidence'] for it in items]
+                best_plate = " ".join(texts)
+                avg_conf = sum(confidences) / len(confidences)
+                best_conf = round(float(avg_conf), 4)
+            else:
+                best_plate = "Không phát hiện biển số"
+        else:
+            # NORMAL STRATEGY: Lấy bounding box đầu tiên
+            det = detections[0]
+            box = det['box']
+            x1, y1, x2, y2 = [int(v) for v in box]
+            
+            padding = 10
+            h, w = image.shape[:2]
+            px1 = max(0, x1 - padding)
+            py1 = max(0, y1 - padding)
+            px2 = min(w, x2 + padding + 10)
+            py2 = min(h, y2 + padding + 10)
+            
+            plate_crop_padded = image[py1:py2, px1:px2]
+            processed_crop = enhance_plate_image(plate_crop_padded) # Tiền xử lý
+            
+            ocr_result = ocr_engine.readtext(processed_crop) # OCR
+            items = ocr_result.get('items', [])
+            
+            if items:
+                texts = [it['text'] for it in items]
+                confidences = [it['confidence'] for it in items]
+                best_plate = " ".join(texts)
+                avg_conf = sum(confidences) / len(confidences)
+                best_conf = round(float(avg_conf), 4)
+            else:
+                best_plate = "Không đọc được chữ"
 
         results.append({
             "Tên ảnh (Filename)": filename,
-            "Biển số dự đoán (Predicted Plate)": plate,
-            "Độ tin cậy (Confidence)": conf
+            "Biển số dự đoán (Predicted Plate)": best_plate,
+            "Độ tin cậy (Confidence)": best_conf
         })
 
-    df = pd.DataFrame(results)
+    df = pd.DataFrame(results) 
     return df
 
 
 # ================= UI =================
-with gr.Blocks(theme=gr.themes.Soft()) as demo:
+with gr.Blocks(theme=gr.themes.Soft()) as demo: 
 
     gr.Markdown("# Nhận Diện Biển Số Xe")
 
