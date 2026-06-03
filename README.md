@@ -88,9 +88,18 @@ Project-II/
 ### 🛠 Quy trình vận hành 
 - **Bước 1:** Cài đặt thư viện bổ sung
 
+**Chạy trên CPU:**
 ```bash
-pip install easyocr paddleocr paddlepaddle          # paddlepaddle-gpu nếu có GPU
+pip install easyocr paddleocr paddlepaddle
 ```
+
+**Chạy trên GPU (CUDA) - Khuyến nghị:**
+```bash
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+pip install easyocr paddleocr paddlepaddle-gpu
+```
+*(Lưu ý: Thay `cu118` bằng phiên bản CUDA tương ứng trên máy bạn. Hãy đổi `EASYOCR_GPU = True` trong file `models/ocr/config.py` nếu muốn EasyOCR chạy trên GPU).*
+
 
 - **Bước 2:** Chạy pipeline cho cả hai mô hình (both) hoặc các mô hình riêng lẻ, --debug nếu muốn hiển thị chi tiết kết quả từng ảnh
 ```bash
@@ -137,11 +146,24 @@ Hệ thống có tích hợp các kỹ thuật xử lý ảnh như:
 Người dùng có thể tải ảnh lên giao diện web và hệ thống sẽ tự động phát hiện và đọc nội dung biển số.
 
 ### Yêu cầu môi trường
-Cài đặt các thư viện cần thiết:
+Cài đặt các thư viện cần thiết (mặc định cho CPU):
 
 ```bash
 pip install -r requirements.txt
 ```
+
+**🔥 Để chạy bằng GPU (CUDA) giúp tăng tốc độ xử lý:**
+1. Đảm bảo bạn đã cài đặt driver NVIDIA và CUDA Toolkit.
+2. Cài đặt PyTorch phiên bản hỗ trợ GPU (dành cho YOLO & EasyOCR):
+```bash
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
+3. Cài đặt PaddlePaddle phiên bản GPU (dành cho PaddleOCR):
+```bash
+pip install paddlepaddle-gpu
+```
+4. Kích hoạt GPU cho EasyOCR (tùy chọn): Mở file `models/ocr/config.py` và đặt `EASYOCR_GPU = True`.
+*(Mô hình YOLO và PaddleOCR sẽ tự động nhận diện và sử dụng GPU nếu các thư viện trên được cài đặt đúng).*
 
 ### Cách chạy demo
 **Bước 1:** Khởi chạy ứng dụng

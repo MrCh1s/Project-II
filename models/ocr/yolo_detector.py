@@ -56,6 +56,44 @@ class YoloDetector:
 
         return detections
 
+    def detect_batch(self, images: list[np.ndarray], batch_size: int = 8) -> list[list[dict]]:
+        if not images:
+            return []
+            
+        results = self.model(
+            images,
+            conf=config.YOLO_CONF_THRESHOLD,
+            iou=config.YOLO_IOU_THRESHOLD,
+            imgsz=1280,
+            verbose=False,
+            batch=batch_size
+        )
+
+        batch_detections = []
+        for i, result in enumerate(results):
+            image = images[i]
+            detections = []
+            boxes = result.boxes
+            if boxes is not None and len(boxes) > 0:
+                for box in boxes:
+                    xyxy   = box.xyxy[0].cpu().numpy()
+                    conf   = float(box.conf[0].cpu().numpy())
+                    x1, y1, x2, y2 = map(int, xyxy)
+                    pad = config.BBOX_PADDING
+                    x1_c = max(0, x1 - pad)
+                    y1_c = max(0, y1 - pad + 5)
+                    x2_c = min(image.shape[1], x2 + pad + 10)
+                    y2_c = min(image.shape[0], y2 + pad - 5)
+                    crop = image[y1_c:y2_c, x1_c:x2_c]
+                    detections.append({
+                        'box': (x1, y1, x2, y2),
+                        'confidence': conf,
+                        'crop': crop
+                    })
+            batch_detections.append(detections)
+            
+        return batch_detections
+
     def detect_from_file(self, image_path: str) -> list[dict]:
         image = cv2.imread(image_path)
         if image is None:
