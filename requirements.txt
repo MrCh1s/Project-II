@@ -14,5 +14,16 @@ paddlepaddle
 gradio
 pandas
 
-# Utilities
-typing
+# -------------------------------------------------------------
+# LƯU Ý QUAN TRỌNG KHI CHẠY TRÊN GPU (CUDA):
+# -------------------------------------------------------------
+# 1. Để YOLO (qua ultralytics) chạy siêu nhanh bằng GPU, cần cài PyTorch bản CUDA.
+#    KHÔNG cài torch bằng lệnh pip install mặc định, hãy chạy lệnh sau:
+#    python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+#
+# 2. Để PaddleOCR chạy bằng GPU, cần cài paddlepaddle-gpu.
+#    KHÔNG dùng "pip install paddlepaddle" (bản CPU), hãy chạy lệnh sau:
+#    python -m pip install paddlepaddle-gpu -i https://www.paddlepaddle.org.cn/packages/stable/cu126/
+#
+# * Ghi chú: CUDA 12.6 (cu126) tương thích hoàn hảo với GPU RTX 4000 series và Python 3.12/3.13.
+# -------------------------------------------------------------
