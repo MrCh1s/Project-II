@@ -49,7 +49,7 @@ class YoloDetector:
             crop = image[y1_c:y2_c, x1_c:x2_c]
 
             detections.append({
-                'box':        (x1, y1, x2, y2),
+                'box':        (x1_c, y1_c, x2_c, y2_c),
                 'confidence':  conf,
                 'crop':       crop,
             })
@@ -85,8 +85,34 @@ class YoloDetector:
                     x2_c = min(image.shape[1], x2 + pad + 10)
                     y2_c = min(image.shape[0], y2 + pad - 5)
                     crop = image[y1_c:y2_c, x1_c:x2_c]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    
                     detections.append({
-                        'box': (x1, y1, x2, y2),
+                        'box': (x1_c, y1_c, x2_c, y2_c),
                         'confidence': conf,
                         'crop': crop
                     })
